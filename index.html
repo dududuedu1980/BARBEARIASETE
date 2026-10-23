@@ -307,4 +307,345 @@
     let historicoConcluidos = JSON.parse(localStorage.getItem('barber_historico')) || [];
 
     function salvarDados() {
-      localStorage.setItem
+      localStorage.setItem('barber_agendamentos', JSON.stringify(agendamentos));
+      localStorage.setItem('barber_clientes', JSON.stringify(clientes));
+      localStorage.setItem('barber_servicos', JSON.stringify(servicos));
+      localStorage.setItem('barber_historico', JSON.stringify(historicoConcluidos));
+    }
+
+    // NAVEGAÇÃO ENTRE AS 4 ABAS
+    function navegarPara(aba) {
+      const abas = ['agenda', 'clientes', 'servicos', 'financas'];
+      abas.forEach(nome => {
+        const elementoAba = document.getElementById('aba-' + nome);
+        const botaoTab = document.getElementById('tab-' + nome);
+        if (elementoAba) elementoAba.classList.add('hidden');
+        if (botaoTab) {
+          botaoTab.className = "flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1";
+        }
+      });
+
+      const alvoAba = document.getElementById('aba-' + aba);
+      const alvoBtn = document.getElementById('tab-' + aba);
+      if (alvoAba) alvoAba.classList.remove('hidden');
+      if (alvoBtn) {
+        alvoBtn.className = "flex flex-col items-center gap-1 text-brand-gold transition py-1";
+      }
+
+      if (aba === 'agenda') renderizarAgenda();
+      if (aba === 'clientes') renderizarClientes();
+      if (aba === 'servicos') renderizarServicos();
+      if (aba === 'financas') renderizarFinancas();
+    }
+
+    // AGENDA
+    function obterDataHojeString() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function definirDataHoje() {
+      document.getElementById('filtro-data').value = obterDataHojeString();
+      renderizarAgenda();
+    }
+
+    function definirDataAmanha() {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      document.getElementById('filtro-data').value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      renderizarAgenda();
+    }
+
+    function renderizarAgenda() {
+      const dataFiltro = document.getElementById('filtro-data').value || obterDataHojeString();
+      const listaEl = document.getElementById('lista-agendamentos');
+      const filtrados = agendamentos.filter(a => a.data === dataFiltro).sort((a,b) => a.hora.localeCompare(b.hora));
+
+      document.getElementById('metricas-qtd').innerText = `${filtrados.length} horários`;
+      const totalValor = filtrados.reduce((acc, curr) => acc + (parseFloat(curr.preco) || 0), 0);
+      document.getElementById('metricas-valor').innerText = `R$ ${totalValor.toFixed(2).replace('.', ',')}`;
+      document.getElementById('badge-total').innerText = `${filtrados.length} no dia`;
+
+      if (filtrados.length === 0) {
+        listaEl.innerHTML = `
+          <div class="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center space-y-2">
+            <i class="ph-bold ph-calendar-blank text-4xl text-zinc-600 mx-auto"></i>
+            <p class="text-sm font-semibold text-zinc-300">Nenhum horário marcado</p>
+            <p class="text-xs text-zinc-500">Toque em "+ Novo" no topo para adicionar o primeiro cliente.</p>
+          </div>
+        `;
+        return;
+      }
+
+      listaEl.innerHTML = filtrados.map(a => {
+        const telLimpo = a.telefone.replace(/\D/g, '');
+        const msgWhats = encodeURIComponent(`Olá ${a.nome}! Confirmando seu horário na barbearia para o dia ${formatarDataBR(a.data)} às ${a.hora} (${a.servico}).`);
+        const linkWhats = `https://wa.me/55${telLimpo}?text=${msgWhats}`;
+
+        return `
+          <div class="bg-brand-surface border border-brand-border p-3.5 rounded-2xl flex items-center justify-between gap-3 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-12 text-center">
+                <span class="text-sm font-bold text-brand-gold">${a.hora}</span>
+              </div>
+              <div class="border-l border-brand-border pl-3">
+                <h4 class="font-bold text-white text-sm leading-tight">${a.nome}</h4>
+                <p class="text-xs text-zinc-400">${a.servico} • <span class="text-emerald-400 font-semibold">R$ ${parseFloat(a.preco).toFixed(2).replace('.', ',')}</span></p>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button onclick="concluirCorte('${a.id}')" class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-base" title="Concluir e Enviar para Finanças">
+                <i class="ph-bold ph-check"></i>
+              </button>
+              <a href="${linkWhats}" target="_blank" class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                <i class="ph-bold ph-whatsapp-logo"></i>
+              </a>
+              <button onclick="excluirAgendamento('${a.id}')" class="w-8 h-8 rounded-xl bg-brand-card border border-brand-border text-zinc-400 hover:text-rose-400 flex items-center justify-center text-base">
+                <i class="ph-bold ph-trash"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function formatarDataBR(dataISO) {
+      if (!dataISO) return '';
+      const [ano, mes, dia] = dataISO.split('-');
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function concluirCorte(id) {
+      const ag = agendamentos.find(a => a.id === id);
+      if (ag) {
+        historicoConcluidos.unshift({
+          id: Date.now().toString(),
+          nome: ag.nome,
+          servico: ag.servico,
+          preco: ag.preco,
+          data: ag.data,
+          hora: ag.hora
+        });
+        agendamentos = agendamentos.filter(a => a.id !== id);
+        salvarDados();
+        renderizarAgenda();
+        alert('Corte concluído e lançado no financeiro!');
+      }
+    }
+
+    function abrirModalAgendamento() {
+      const select = document.getElementById('ag-servico');
+      select.innerHTML = servicos.map(s => `
+        <option value="${s.nome}" data-preco="${s.preco}">${s.nome} - R$ ${parseFloat(s.preco).toFixed(2).replace('.', ',')}</option>
+      `).join('');
+      document.getElementById('ag-data').value = document.getElementById('filtro-data').value || obterDataHojeString();
+      document.getElementById('modal-agendamento').classList.remove('hidden');
+    }
+
+    function fecharModalAgendamento() {
+      document.getElementById('modal-agendamento').classList.add('hidden');
+      document.getElementById('form-agendamento').reset();
+    }
+
+    function salvarAgendamento(e) {
+      e.preventDefault();
+      const nome = document.getElementById('ag-nome').value.trim();
+      const telefone = document.getElementById('ag-telefone').value.trim();
+      const data = document.getElementById('ag-data').value;
+      const hora = document.getElementById('ag-hora').value;
+      const select = document.getElementById('ag-servico');
+      const servico = select.value;
+      const preco = parseFloat(select.selectedOptions[0].getAttribute('data-preco'));
+
+      agendamentos.push({ id: Date.now().toString(), nome, telefone, data, hora, servico, preco });
+
+      const existe = clientes.some(c => c.telefone.replace(/\D/g, '') === telefone.replace(/\D/g, ''));
+      if (!existe) clientes.push({ id: Date.now().toString() + 'c', nome, telefone });
+
+      salvarDados();
+      fecharModalAgendamento();
+      renderizarAgenda();
+    }
+
+    function excluirAgendamento(id) {
+      if (confirm('Deseja excluir este agendamento?')) {
+        agendamentos = agendamentos.filter(a => a.id !== id);
+        salvarDados();
+        renderizarAgenda();
+      }
+    }
+
+    // CLIENTES
+    function renderizarClientes() {
+      const termo = (document.getElementById('busca-cliente')?.value || '').toLowerCase();
+      const listaEl = document.getElementById('lista-clientes');
+      const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(termo) || c.telefone.includes(termo));
+
+      if (filtrados.length === 0) {
+        listaEl.innerHTML = `<div class="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center text-xs text-zinc-500">Nenhum cliente cadastrado ainda.</div>`;
+        return;
+      }
+
+      listaEl.innerHTML = filtrados.map(c => `
+        <div class="bg-brand-surface border border-brand-border p-3 rounded-2xl flex items-center justify-between shadow-sm">
+          <div>
+            <h4 class="font-bold text-white text-sm">${c.nome}</h4>
+            <p class="text-xs text-zinc-400">${c.telefone}</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <a href="https://wa.me/55${c.telefone.replace(/\D/g, '')}" target="_blank" class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-base">
+              <i class="ph-bold ph-whatsapp-logo"></i>
+            </a>
+            <button onclick="excluirCliente('${c.id}')" class="w-8 h-8 rounded-xl bg-brand-card border border-brand-border text-zinc-400 hover:text-rose-400 flex items-center justify-center text-base">
+              <i class="ph-bold ph-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function abrirModalCliente() {
+      document.getElementById('modal-cliente').classList.remove('hidden');
+    }
+
+    function fecharModalCliente() {
+      document.getElementById('modal-cliente').classList.add('hidden');
+      document.getElementById('form-cliente').reset();
+    }
+
+    function salvarClienteManual(e) {
+      e.preventDefault();
+      const nome = document.getElementById('cli-nome').value.trim();
+      const telefone = document.getElementById('cli-telefone').value.trim();
+      clientes.push({ id: Date.now().toString(), nome, telefone });
+      salvarDados();
+      fecharModalCliente();
+      renderizarClientes();
+    }
+
+    function excluirCliente(id) {
+      if (confirm('Remover cliente da lista?')) {
+        clientes = clientes.filter(c => c.id !== id);
+        salvarDados();
+        renderizarClientes();
+      }
+    }
+
+    async function puxarContatoCelular() {
+      if ('contacts' in navigator && 'ContactsManager' in window) {
+        try {
+          const selecionados = await navigator.contacts.select(['name', 'tel'], { multiple: true });
+          if (selecionados && selecionados.length > 0) {
+            let add = 0;
+            selecionados.forEach(c => {
+              const nome = c.name ? c.name[0] : 'Cliente';
+              const tel = c.tel ? c.tel[0].replace(/\D/g, '') : '';
+              if (tel && !clientes.some(cli => cli.telefone.replace(/\D/g, '') === tel)) {
+                clientes.push({ id: Date.now().toString() + Math.random(), nome, telefone: tel });
+                add++;
+              }
+            });
+            salvarDados();
+            renderizarClientes();
+            alert(`${add} contatos importados!`);
+          }
+        } catch (e) { console.log(e); }
+      } else {
+        alert('Recurso compatível no Chrome no Android. Se preferir, use o botão Novo.');
+      }
+    }
+
+    async function puxarContatoParaAgendamento() {
+      if ('contacts' in navigator && 'ContactsManager' in window) {
+        try {
+          const selecionados = await navigator.contacts.select(['name', 'tel'], { multiple: false });
+          if (selecionados && selecionados.length > 0) {
+            const c = selecionados[0];
+            if (c.name && c.name[0]) document.getElementById('ag-nome').value = c.name[0];
+            if (c.tel && c.tel[0]) document.getElementById('ag-telefone').value = c.tel[0].replace(/\D/g, '');
+          }
+        } catch (e) { console.log(e); }
+      } else {
+        alert('Navegador não suporta seleção direta. Digite manualmente.');
+      }
+    }
+
+    // SERVIÇOS
+    function renderizarServicos() {
+      const listaEl = document.getElementById('lista-servicos');
+      listaEl.innerHTML = servicos.map(s => `
+        <div class="bg-brand-surface border border-brand-border p-3.5 rounded-xl flex items-center justify-between shadow-sm">
+          <div>
+            <span class="font-bold text-white text-sm block">${s.nome}</span>
+            <span class="text-xs text-brand-gold font-bold">R$ ${parseFloat(s.preco).toFixed(2).replace('.', ',')}</span>
+          </div>
+          <button onclick="excluirServico('${s.id}')" class="w-8 h-8 rounded-xl bg-brand-card text-zinc-400 hover:text-rose-400 flex items-center justify-center">
+            <i class="ph-bold ph-trash"></i>
+          </button>
+        </div>
+      `).join('');
+    }
+
+    function abrirModalServico() {
+      const nome = prompt('Nome do serviço (ex: Platinado):');
+      if (!nome) return;
+      const precoStr = prompt('Valor (ex: 50.00):');
+      const preco = parseFloat(precoStr);
+      if (isNaN(preco)) { alert('Valor inválido!'); return; }
+      servicos.push({ id: Date.now().toString(), nome, preco });
+      salvarDados();
+      renderizarServicos();
+    }
+
+    function excluirServico(id) {
+      if (confirm('Excluir este serviço da lista?')) {
+        servicos = servicos.filter(s => s.id !== id);
+        salvarDados();
+        renderizarServicos();
+      }
+    }
+
+    // FINANÇAS
+    function renderizarFinancas() {
+      const total = historicoConcluidos.reduce((acc, curr) => acc + (parseFloat(curr.preco) || 0), 0);
+      document.getElementById('fin-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
+      document.getElementById('fin-qtd').innerText = `${historicoConcluidos.length} cortes`;
+
+      const histEl = document.getElementById('fin-historico');
+      if (historicoConcluidos.length === 0) {
+        histEl.innerHTML = `<p class="text-xs text-zinc-500 text-center py-4">Nenhum corte concluído ainda.</p>`;
+        return;
+      }
+
+      histEl.innerHTML = historicoConcluidos.map(h => `
+        <div class="bg-brand-card p-2.5 rounded-xl border border-brand-border flex items-center justify-between text-xs">
+          <div>
+            <strong class="text-white block">${h.nome}</strong>
+            <span class="text-zinc-400">${h.servico} • ${formatarDataBR(h.data)}</span>
+          </div>
+          <span class="text-emerald-400 font-bold">R$ ${parseFloat(h.preco).toFixed(2).replace('.', ',')}</span>
+        </div>
+      `).join('');
+    }
+
+    // ZERAR
+    function zerarAplicativo() {
+      if (confirm('Tem certeza de que deseja apagar todos os horários e clientes e começar do zero?')) {
+        localStorage.clear();
+        agendamentos = [];
+        clientes = [];
+        historicoConcluidos = [];
+        servicos = servicosPadrao;
+        salvarDados();
+        navegarPara('agenda');
+        alert('Tudo zerado com sucesso!');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      definirDataHoje();
+      navegarPara('agenda');
+    });
+  </script>
+</body>
+</html>
