@@ -128,13 +128,22 @@
       <div class="flex items-center justify-between">
         <h2 class="font-bold text-base text-white">Meus Clientes</h2>
         <div class="flex gap-2">
-          <button onclick="puxarContatoCelular()" class="px-3 py-1.5 rounded-lg bg-brand-card border border-brand-border text-brand-gold font-semibold text-xs flex items-center gap-1 active:scale-95 transition">
-            <i class="ph-bold ph-device-mobile"></i> 📱 Puxar da Agenda
-          </button>
           <button onclick="abrirModalCliente()" class="px-3 py-1.5 rounded-lg bg-brand-gold text-black font-bold text-xs flex items-center gap-1 active:scale-95 transition">
             <i class="ph-bold ph-user-plus"></i> Novo
           </button>
         </div>
+      </div>
+
+      <!-- BOTÕES DE IMPORTAÇÃO RÁPIDA -->
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="puxarContatoCelular()" class="py-2 px-2.5 rounded-xl bg-brand-surface border border-brand-border text-brand-gold font-semibold text-xs flex items-center justify-center gap-1.5 active:bg-brand-card transition shadow-sm">
+          <i class="ph-bold ph-device-mobile text-base"></i> 📱 Da Agenda
+        </button>
+
+        <label class="py-2 px-2.5 rounded-xl bg-brand-surface border border-brand-border text-brand-gold font-semibold text-xs flex items-center justify-center gap-1.5 active:bg-brand-card transition shadow-sm cursor-pointer">
+          <i class="ph-bold ph-file-arrow-up text-base"></i> 📂 Subir Arquivo
+          <input type="file" id="arquivo-contatos" accept=".vcf,.csv" onchange="importarArquivoContatos(event)" class="hidden">
+        </label>
       </div>
 
       <div class="relative">
@@ -145,69 +154,65 @@
       <div id="lista-clientes" class="space-y-2"></div>
     </section>
 
-    <!-- 3. ABA SERVIÇOS -->
+    <!-- 3. ABA SERVIÇOS (COM EDIÇÃO E EXCLUSÃO) -->
     <section id="aba-servicos" class="hidden space-y-4">
       <div class="flex items-center justify-between">
         <h2 class="font-bold text-base text-white">Tabela de Serviços</h2>
         <button onclick="abrirModalServico()" class="px-3 py-1.5 rounded-lg bg-brand-gold text-black font-bold text-xs flex items-center gap-1 active:scale-95 transition">
-          <i class="ph-bold ph-plus"></i> Adicionar
+          <i class="ph-bold ph-plus"></i> Novo Serviço
         </button>
       </div>
       <div id="lista-servicos" class="space-y-2"></div>
       
       <div class="bg-brand-surface border border-brand-border p-4 rounded-2xl space-y-3 mt-6">
         <h3 class="text-sm font-bold text-white flex items-center gap-2">
-          <i class="ph-bold ph-gear text-brand-gold"></i> Limpeza do App
+          <i class="ph-bold ph-gear text-brand-gold"></i> Limpeza Geral
         </h3>
-        <p class="text-xs text-zinc-400">Deseja apagar os dados do aparelho e começar tudo limpo?</p>
+        <p class="text-xs text-zinc-400">Apaga os agendamentos, clientes e histórico do aparelho para começar do zero.</p>
         <button onclick="zerarAplicativo()" class="w-full py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold text-xs flex items-center justify-center gap-1.5 active:bg-rose-500/20 transition">
           <i class="ph-bold ph-trash"></i> Zerar Todos os Dados
         </button>
       </div>
     </section>
 
-    <!-- 4. ABA FINANÇAS (ÚLTIMA POSIÇÃO) -->
+    <!-- 4. ABA FINANÇAS -->
     <section id="aba-financas" class="hidden space-y-4">
       <h2 class="font-bold text-base text-white">Controle Financeiro</h2>
       
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-brand-surface border border-brand-border p-3.5 rounded-2xl shadow-sm">
-          <span class="text-xs text-zinc-400 font-medium">Total Concluído</span>
+          <span class="text-xs text-zinc-400 font-medium">Total Recebido</span>
           <div id="fin-total" class="text-xl font-bold text-emerald-400 mt-1">R$ 0,00</div>
         </div>
         <div class="bg-brand-surface border border-brand-border p-3.5 rounded-2xl shadow-sm">
-          <span class="text-xs text-zinc-400 font-medium">Cortes Concluídos</span>
+          <span class="text-xs text-zinc-400 font-medium">Cortes Finalizados</span>
           <div id="fin-qtd" class="text-xl font-bold text-white mt-1">0</div>
         </div>
       </div>
 
       <div class="bg-brand-surface border border-brand-border p-4 rounded-2xl space-y-3">
-        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Histórico de Atendimentos</h3>
+        <h3 class="text-xs font-bold text-zinc-400 uppercase tracking-wider">Histórico de Cortes Concluídos</h3>
         <div id="fin-historico" class="space-y-2 max-h-72 overflow-y-auto"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- BARRA DE NAVEGAÇÃO INFERIOR COM AS 4 ABAS NA ORDEM EXATA -->
+  <!-- NAVEGAÇÃO INFERIOR -->
   <nav class="fixed bottom-0 inset-x-0 bg-brand-surface/95 backdrop-blur-md border-t border-brand-border z-40 py-2 px-4 max-w-md mx-auto">
     <div class="grid grid-cols-4 gap-1 text-center">
-      <!-- 1. Agenda -->
       <button onclick="navegarPara('agenda')" id="tab-agenda" class="flex flex-col items-center gap-1 text-brand-gold transition py-1">
         <i class="ph-bold ph-calendar text-2xl"></i>
         <span class="text-[10px] font-bold">Agenda</span>
       </button>
-      <!-- 2. Clientes -->
       <button onclick="navegarPara('clientes')" id="tab-clientes" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1">
         <i class="ph-bold ph-users text-2xl"></i>
         <span class="text-[10px] font-bold">Clientes</span>
       </button>
-      <!-- 3. Serviços -->
       <button onclick="navegarPara('servicos')" id="tab-servicos" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1">
         <i class="ph-bold ph-scissors text-2xl"></i>
         <span class="text-[10px] font-bold">Serviços</span>
       </button>
-      <!-- 4. Finanças -->
       <button onclick="navegarPara('financas')" id="tab-financas" class="flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1">
         <i class="ph-bold ph-wallet text-2xl"></i>
         <span class="text-[10px] font-bold">Finanças</span>
@@ -226,13 +231,13 @@
       </div>
 
       <button onclick="puxarContatoParaAgendamento()" type="button" class="w-full py-2 px-3 rounded-xl bg-brand-card border border-brand-border text-brand-gold text-xs font-bold flex items-center justify-center gap-2 active:bg-brand-border">
-        <i class="ph-bold ph-device-mobile text-base"></i> 📱 Puxar Contato da Agenda do Celular
+        <i class="ph-bold ph-device-mobile text-base"></i> 📱 Puxar Contato da Agenda
       </button>
 
       <form id="form-agendamento" onsubmit="salvarAgendamento(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-zinc-400 mb-1">Nome do Cliente *</label>
-          <input type="text" id="ag-nome" required placeholder="Ex: Lucas Barbosa" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
+          <input type="text" id="ag-nome" required placeholder="Ex: Rodrigo Santos" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
         </div>
 
         <div>
@@ -277,7 +282,7 @@
       <form id="form-cliente" onsubmit="salvarClienteManual(event)" class="space-y-3">
         <div>
           <label class="block text-xs font-semibold text-zinc-400 mb-1">Nome Completo *</label>
-          <input type="text" id="cli-nome" required placeholder="Ex: Bruno Lima" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
+          <input type="text" id="cli-nome" required placeholder="Ex: Mateus Oliveira" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
         </div>
         <div>
           <label class="block text-xs font-semibold text-zinc-400 mb-1">WhatsApp (com DDD) *</label>
@@ -286,6 +291,34 @@
         <div class="pt-2 flex gap-2">
           <button type="button" onclick="fecharModalCliente()" class="flex-1 py-2.5 rounded-xl bg-brand-card border border-brand-border text-zinc-300 text-xs font-bold">Cancelar</button>
           <button type="submit" class="flex-1 py-2.5 rounded-xl bg-brand-gold text-black text-xs font-bold">Salvar Cliente</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR / CRIAR SERVIÇO -->
+  <div id="modal-servico" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="bg-brand-surface border-t sm:border border-brand-border w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 id="modal-servico-titulo" class="font-bold text-base text-white flex items-center gap-2">
+          <i class="ph-bold ph-scissors text-brand-gold"></i> Editar Serviço
+        </h3>
+        <button onclick="fecharModalServico()" class="text-zinc-400 hover:text-white p-1 text-lg">✕</button>
+      </div>
+
+      <form id="form-servico" onsubmit="salvarModalServico(event)" class="space-y-3">
+        <input type="hidden" id="srv-id">
+        <div>
+          <label class="block text-xs font-semibold text-zinc-400 mb-1">Nome do Serviço *</label>
+          <input type="text" id="srv-nome" required placeholder="Ex: Corte Navalhado" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-zinc-400 mb-1">Preço (R$) *</label>
+          <input type="number" step="0.50" id="srv-preco" required placeholder="Ex: 45.00" class="w-full bg-brand-card border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-gold">
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="fecharModalServico()" class="flex-1 py-2.5 rounded-xl bg-brand-card border border-brand-border text-zinc-300 text-xs font-bold">Cancelar</button>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl bg-brand-gold text-black text-xs font-bold">Salvar Serviço</button>
         </div>
       </form>
     </div>
@@ -313,24 +346,19 @@
       localStorage.setItem('barber_historico', JSON.stringify(historicoConcluidos));
     }
 
-    // NAVEGAÇÃO ENTRE AS 4 ABAS
+    // NAVEGAÇÃO
     function navegarPara(aba) {
-      const abas = ['agenda', 'clientes', 'servicos', 'financas'];
-      abas.forEach(nome => {
+      ['agenda', 'clientes', 'servicos', 'financas'].forEach(nome => {
         const elementoAba = document.getElementById('aba-' + nome);
         const botaoTab = document.getElementById('tab-' + nome);
         if (elementoAba) elementoAba.classList.add('hidden');
-        if (botaoTab) {
-          botaoTab.className = "flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1";
-        }
+        if (botaoTab) botaoTab.className = "flex flex-col items-center gap-1 text-zinc-400 hover:text-white transition py-1";
       });
 
       const alvoAba = document.getElementById('aba-' + aba);
       const alvoBtn = document.getElementById('tab-' + aba);
       if (alvoAba) alvoAba.classList.remove('hidden');
-      if (alvoBtn) {
-        alvoBtn.className = "flex flex-col items-center gap-1 text-brand-gold transition py-1";
-      }
+      if (alvoBtn) alvoBtn.className = "flex flex-col items-center gap-1 text-brand-gold transition py-1";
 
       if (aba === 'agenda') renderizarAgenda();
       if (aba === 'clientes') renderizarClientes();
@@ -338,7 +366,6 @@
       if (aba === 'financas') renderizarFinancas();
     }
 
-    // AGENDA
     function obterDataHojeString() {
       const d = new Date();
       return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -356,6 +383,7 @@
       renderizarAgenda();
     }
 
+    // AGENDA
     function renderizarAgenda() {
       const dataFiltro = document.getElementById('filtro-data').value || obterDataHojeString();
       const listaEl = document.getElementById('lista-agendamentos');
@@ -371,7 +399,7 @@
           <div class="bg-brand-surface border border-brand-border rounded-2xl p-8 text-center space-y-2">
             <i class="ph-bold ph-calendar-blank text-4xl text-zinc-600 mx-auto"></i>
             <p class="text-sm font-semibold text-zinc-300">Nenhum horário marcado</p>
-            <p class="text-xs text-zinc-500">Toque em "+ Novo" no topo para adicionar o primeiro cliente.</p>
+            <p class="text-xs text-zinc-500">Toque em "+ Novo" para agendar um cliente.</p>
           </div>
         `;
         return;
@@ -482,7 +510,7 @@
       const filtrados = clientes.filter(c => c.nome.toLowerCase().includes(termo) || c.telefone.includes(termo));
 
       if (filtrados.length === 0) {
-        listaEl.innerHTML = `<div class="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center text-xs text-zinc-500">Nenhum cliente cadastrado ainda.</div>`;
+        listaEl.innerHTML = `<div class="bg-brand-surface border border-brand-border rounded-2xl p-6 text-center text-xs text-zinc-500">Nenhum cliente cadastrado ainda. Use os botões acima para puxar os contatos!</div>`;
         return;
       }
 
@@ -547,11 +575,11 @@
             });
             salvarDados();
             renderizarClientes();
-            alert(`${add} contatos importados!`);
+            alert(`${add} contato(s) importado(s)!`);
           }
         } catch (e) { console.log(e); }
       } else {
-        alert('Recurso compatível no Chrome no Android. Se preferir, use o botão Novo.');
+        alert('Para importar muitos contatos de uma vez, use a opção "Subir Arquivo" logo ao lado!');
       }
     }
 
@@ -566,11 +594,59 @@
           }
         } catch (e) { console.log(e); }
       } else {
-        alert('Navegador não suporta seleção direta. Digite manualmente.');
+        alert('Selecione ou digite o nome e telefone do cliente.');
       }
     }
 
-    // SERVIÇOS
+    // IMPORTADOR DE ARQUIVO EM LOTE (500+ CONTATOS DE UMA VEZ)
+    function importarArquivoContatos(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const conteudo = evt.target.result;
+        let adicionados = 0;
+
+        if (file.name.endsWith('.vcf')) {
+          // Processa arquivo vCard (.vcf)
+          const cards = conteudo.split('BEGIN:VCARD');
+          cards.forEach(card => {
+            let nomeMatch = card.match(/FN:(.+)/i);
+            let telMatch = card.match(/TEL.*:(.+)/i);
+            if (nomeMatch && telMatch) {
+              const nome = nomeMatch[1].trim();
+              const tel = telMatch[1].replace(/\D/g, '');
+              if (tel && !clientes.some(c => c.telefone.replace(/\D/g, '') === tel)) {
+                clientes.push({ id: Date.now().toString() + Math.random(), nome, telefone: tel });
+                adicionados++;
+              }
+            }
+          });
+        } else {
+          // Processa arquivo CSV / Excel simples
+          const linhas = conteudo.split('\n');
+          linhas.forEach(linha => {
+            const colunas = linha.split(/[,;]/);
+            if (colunas.length >= 2) {
+              const nome = colunas[0].replace(/["']/g, '').trim();
+              const tel = colunas[1].replace(/\D/g, '');
+              if (nome && tel && !clientes.some(c => c.telefone.replace(/\D/g, '') === tel)) {
+                clientes.push({ id: Date.now().toString() + Math.random(), nome, telefone: tel });
+                adicionados++;
+              }
+            }
+          });
+        }
+
+        salvarDados();
+        renderizarClientes();
+        alert(`Sucesso! ${adicionados} contatos foram importados de uma vez para o aplicativo!`);
+      };
+      reader.readAsText(file);
+    }
+
+    // SERVIÇOS (COM EDIÇÃO E EXCLUSÃO)
     function renderizarServicos() {
       const listaEl = document.getElementById('lista-servicos');
       listaEl.innerHTML = servicos.map(s => `
@@ -579,26 +655,68 @@
             <span class="font-bold text-white text-sm block">${s.nome}</span>
             <span class="text-xs text-brand-gold font-bold">R$ ${parseFloat(s.preco).toFixed(2).replace('.', ',')}</span>
           </div>
-          <button onclick="excluirServico('${s.id}')" class="w-8 h-8 rounded-xl bg-brand-card text-zinc-400 hover:text-rose-400 flex items-center justify-center">
-            <i class="ph-bold ph-trash"></i>
-          </button>
+          <div class="flex items-center gap-1.5">
+            <!-- BOTÃO DO LÁPIS (EDITAR) -->
+            <button onclick="editarServico('${s.id}')" class="w-8 h-8 rounded-xl bg-brand-card text-brand-gold hover:text-white flex items-center justify-center transition" title="Editar Serviço">
+              <i class="ph-bold ph-pencil-simple text-base"></i>
+            </button>
+            <!-- BOTÃO DA LIXEIRA (EXCLUIR) -->
+            <button onclick="excluirServico('${s.id}')" class="w-8 h-8 rounded-xl bg-brand-card text-zinc-400 hover:text-rose-400 flex items-center justify-center transition" title="Excluir Serviço">
+              <i class="ph-bold ph-trash text-base"></i>
+            </button>
+          </div>
         </div>
       `).join('');
     }
 
     function abrirModalServico() {
-      const nome = prompt('Nome do serviço (ex: Platinado):');
-      if (!nome) return;
-      const precoStr = prompt('Valor (ex: 50.00):');
-      const preco = parseFloat(precoStr);
-      if (isNaN(preco)) { alert('Valor inválido!'); return; }
-      servicos.push({ id: Date.now().toString(), nome, preco });
+      document.getElementById('modal-servico-titulo').innerHTML = `<i class="ph-bold ph-scissors text-brand-gold"></i> Novo Serviço`;
+      document.getElementById('srv-id').value = '';
+      document.getElementById('srv-nome').value = '';
+      document.getElementById('srv-preco').value = '';
+      document.getElementById('modal-servico').classList.remove('hidden');
+    }
+
+    function editarServico(id) {
+      const s = servicos.find(item => item.id === id);
+      if (!s) return;
+      document.getElementById('modal-servico-titulo').innerHTML = `<i class="ph-bold ph-pencil-simple text-brand-gold"></i> Editar Serviço`;
+      document.getElementById('srv-id').value = s.id;
+      document.getElementById('srv-nome').value = s.nome;
+      document.getElementById('srv-preco').value = s.preco;
+      document.getElementById('modal-servico').classList.remove('hidden');
+    }
+
+    function fecharModalServico() {
+      document.getElementById('modal-servico').classList.add('hidden');
+      document.getElementById('form-servico').reset();
+    }
+
+    function salvarModalServico(e) {
+      e.preventDefault();
+      const id = document.getElementById('srv-id').value;
+      const nome = document.getElementById('srv-nome').value.trim();
+      const preco = parseFloat(document.getElementById('srv-preco').value);
+
+      if (id) {
+        // Editando serviço existente
+        const index = servicos.findIndex(s => s.id === id);
+        if (index !== -1) {
+          servicos[index].nome = nome;
+          servicos[index].preco = preco;
+        }
+      } else {
+        // Novo serviço
+        servicos.push({ id: Date.now().toString(), nome, preco });
+      }
+
       salvarDados();
+      fecharModalServico();
       renderizarServicos();
     }
 
     function excluirServico(id) {
-      if (confirm('Excluir este serviço da lista?')) {
+      if (confirm('Deseja excluir este serviço da tabela?')) {
         servicos = servicos.filter(s => s.id !== id);
         salvarDados();
         renderizarServicos();
